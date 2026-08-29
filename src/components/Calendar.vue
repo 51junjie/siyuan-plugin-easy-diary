@@ -499,14 +499,18 @@ async function changeMonth(date: Date) {
  * 获取当月已存在的日报日期 - 优化：添加并发控制和缓存策略
  */
 async function getExistDate(date: Date) {
-  if (!notebook.value) {
+  const currentNotebook = notebook.value;
+  if (!currentNotebook) {
     return;
   }
 
+  existDailyNotesMap.value.clear();
+  existWeeklyNotesMap.value.clear();
+
   try {
-    const existDailyNotes = await notebook.value.getExistDailyNote(date);
+    const existDailyNotes = await currentNotebook.getExistDailyNote(date);
+    if (notebook.value !== currentNotebook) return;
     if (existDailyNotes) {
-      existDailyNotesMap.value.clear();
       for (const { id, dateStr } of existDailyNotes) {
         existDailyNotesMap.value.set(dateStr, id);
       }
@@ -515,17 +519,16 @@ async function getExistDate(date: Date) {
     console.error('[calendar] getExistDailyNote error', e);
   }
 
-  existWeeklyNotesMap.value.clear();
-
   const weekPromises = monthWeeks.value.map(week => {
     const refDay = week.days[week.days.length - 1];
-    return notebook
-      .value!.getExistWeeklyNote(refDay.toDate(), week.weekNum)
+    return currentNotebook
+      .getExistWeeklyNote(refDay.toDate(), week.weekNum)
       .then(noteId => ({ weekNum: week.weekNum, noteId }))
       .catch(() => ({ weekNum: week.weekNum, noteId: null }));
   });
 
   const results = await Promise.all(weekPromises);
+  if (notebook.value !== currentNotebook) return;
   for (const { weekNum, noteId } of results) {
     if (noteId) {
       existWeeklyNotesMap.value.set(weekNum, noteId);
@@ -540,7 +543,7 @@ watch(notebook, notebook => {
   if (notebook) {
     getExistDate(thisPanelDate.value);
   }
-});
+}, { immediate: true });
 
 watch(displayedMonth, newMonth => {
   thisPanelDate.value = newMonth.toDate();
@@ -557,7 +560,7 @@ watch(refreshTrigger, async () => {
 });
 
 // 监听思源笔记事件，刷新日期列表
-eventBus.value?.on('ws-main', async ({ detail }) => {
+const handleWsMain = async ({ detail }: { detail: { cmd: string } }) => {
   if (!notebook.value) {
     return;
   }
@@ -566,10 +569,11 @@ eventBus.value?.on('ws-main', async ({ detail }) => {
     await refreshSql();
     await getExistDate(thisPanelDate.value);
   }
-});
+};
 
-// 初始化
-getExistDate(new Date());
+eventBus.value?.on('ws-main', handleWsMain);
+onBeforeUnmount(() => eventBus.value?.off('ws-main', handleWsMain));
+
 </script>
 
 <style scoped lang="less">
