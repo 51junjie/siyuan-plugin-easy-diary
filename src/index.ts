@@ -2,18 +2,13 @@ import App from './App.vue';
 import { createApp } from 'vue';
 import { Plugin, Menu, Setting, getFrontend, showMessage } from 'siyuan';
 import { app, i18n, isMobile, eventBus, pluginStorage, position, weekStart, showWeekNum, weeklyEnabled, weeklyPath, weeklyTemplatePath, refreshTrigger } from './hooks/useSiYuan';
-import SySelect from './lib/SySelect.vue';
-import WeekStartSelect from './lib/WeekStartSelect.vue';
-import ShowWeekNumToggle from './lib/ShowWeekNumToggle.vue';
-import WeeklySettings from './lib/WeeklySettings.vue';
-import WeeklyNoteGroup from './lib/WeeklyNoteGroup.vue';
+import SettingsLayout from './lib/SettingsLayout.vue';
 import './index.less';
 
 const STORAGE_NAME = 'arco-calendar-entry';
 
 export default class ArcoCalendarPlugin extends Plugin {
-  private topEle!: HTMLElement;
-  private menuEle!: HTMLElement;
+  private topEles: HTMLElement[] = [];
 
   onload() {
     i18n.value = this.i18n;
@@ -29,24 +24,32 @@ export default class ArcoCalendarPlugin extends Plugin {
 
   onunload() {
     console.log(this.i18n.byePlugin);
-    this.topEle?.remove();
-    this.menuEle?.remove();
+    this.topEles.forEach(el => el?.remove());
+    this.topEles = [];
     pluginStorage.value = undefined;
   }
 
   private async init() {
     const data = await this.loadData(STORAGE_NAME);
     if (!data) {
-      await this.saveData(STORAGE_NAME, { position: 'top-left', weekStart: 1, showWeekNum: false, weeklyEnabled: false, weeklyPath: '', weeklyTemplatePath: '' });
+      await this.saveData(STORAGE_NAME, { position: ['top-left'], weekStart: 1, showWeekNum: false, weeklyEnabled: false, weeklyPath: '', weeklyTemplatePath: '' });
       await this.loadData(STORAGE_NAME);
-      position.value = 'top-left';
+      position.value = ['top-left'];
       weekStart.value = 1;
       showWeekNum.value = false;
       weeklyEnabled.value = false;
       weeklyPath.value = '';
       weeklyTemplatePath.value = '';
     } else {
-      position.value = data.position;
+      // 兼容旧版单值字符串：转为数组
+      const rawPosition = data.position;
+      if (Array.isArray(rawPosition)) {
+        position.value = [...rawPosition];
+      } else if (typeof rawPosition === 'string' && rawPosition) {
+        position.value = [rawPosition];
+      } else {
+        position.value = ['top-left'];
+      }
       if (data.weekStart !== undefined) {
         weekStart.value = Number(data.weekStart);
       }
@@ -63,11 +66,15 @@ export default class ArcoCalendarPlugin extends Plugin {
         weeklyTemplatePath.value = String(data.weeklyTemplatePath);
       }
     }
-    if (position.value === 'top-left') {
+    // 按固定顺序挂载入口，避免不同设置下顺序跳变
+    const positions = Array.isArray(position.value) ? position.value : [];
+    if (positions.includes('top-left')) {
       this.addTopItem('left');
-    } else if (position.value === 'top-right') {
+    }
+    if (positions.includes('top-right')) {
       this.addTopItem('right');
-    } else if (position.value === 'dock') {
+    }
+    if (positions.includes('dock')) {
       this.addDockItem();
     }
     this.initSetting();
@@ -76,10 +83,10 @@ export default class ArcoCalendarPlugin extends Plugin {
   private initSetting() {
     this.setting = new Setting({
       height: 'auto',
-      width: '500px',
+      width: '560px',
       confirmCallback: async () => {
         const saveObj: any = {
-          position: position.value,
+          position: Array.isArray(position.value) ? [...position.value] : [],
           weekStart: Number(weekStart.value),
           showWeekNum: showWeekNum.value,
           weeklyEnabled: weeklyEnabled.value,
@@ -90,49 +97,21 @@ export default class ArcoCalendarPlugin extends Plugin {
         window.location.reload();
       },
     });
-    const selectEle = document.createElement('div');
-    createApp(SySelect).mount(selectEle);
-    this.setting.addItem({
-      title: i18n.value.position?.title || 'Position',
-      actionElement: selectEle,
-    });
 
-    // Week start select (separate setting item, aligned)
-    const weekStartEle = document.createElement('div');
-    createApp(WeekStartSelect).mount(weekStartEle);
+    // 单一全宽布局组件，内部自行渲染分区卡片
+    const layoutEle = document.createElement('div');
+    layoutEle.style.width = '100%';
+    createApp(SettingsLayout).mount(layoutEle);
     this.setting.addItem({
-      title: i18n.value.weekStart?.title || 'Week starts on',
-      actionElement: weekStartEle,
-    });
-
-    // Show week number toggle
-    const showWeekNumEle = document.createElement('div');
-    createApp(ShowWeekNumToggle).mount(showWeekNumEle);
-    this.setting.addItem({
-      title: i18n.value.showWeekNum?.title || 'Show week number',
-      actionElement: showWeekNumEle,
-    });
-
-    // Weekly notes enable toggle (standard titled setting)
-    const weeklyEnabledEle = document.createElement('div');
-    createApp(WeeklySettings).mount(weeklyEnabledEle);
-    this.setting.addItem({
-      title: i18n.value.weekly?.enable || 'Enable weekly notes',
-      actionElement: weeklyEnabledEle,
-    });
-
-    // Integrated Weekly Notes Settings
-    const weeklyGroupEle = document.createElement('div');
-    weeklyGroupEle.style.width = '100%';
-    createApp(WeeklyNoteGroup).mount(weeklyGroupEle);
-    this.setting.addItem({
-      title: '', // No title - let the component use full width
-      actionElement: weeklyGroupEle,
+      title: '',
+      actionElement: layoutEle,
     });
   }
 
   private addTopItem(direction: 'left' | 'right') {
-    this.topEle = this.addTopBar({
+    const menuEle = document.createElement('div');
+    createApp(App).mount(menuEle);
+    const topEle = this.addTopBar({
       icon: 'iconCalendar',
       title: this.i18n.openCalendar,
       position: direction,
@@ -140,14 +119,14 @@ export default class ArcoCalendarPlugin extends Plugin {
         // 每次打开弹窗时触发刷新信号
         refreshTrigger.value++;
 
-        let rect = this.topEle.getBoundingClientRect();
+        let rect = topEle.getBoundingClientRect();
         // 如果被隐藏，则使用更多按钮
         if (rect.width === 0) {
           const barMore = document.querySelector('#barMore');
           if (barMore) rect = barMore.getBoundingClientRect();
         }
         const menu = new Menu('Calendar');
-        menu.addItem({ element: this.menuEle });
+        menu.addItem({ element: menuEle });
         if (isMobile.value) {
           menu.fullscreen();
         } else {
@@ -159,8 +138,7 @@ export default class ArcoCalendarPlugin extends Plugin {
         }
       },
     });
-    this.menuEle = document.createElement('div');
-    createApp(App).mount(this.menuEle);
+    this.topEles.push(topEle);
   }
 
   private addDockItem() {

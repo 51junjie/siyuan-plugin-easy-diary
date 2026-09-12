@@ -23,7 +23,8 @@
     "title": "Posición de entrada del botón",
     "topLeft": "Arriba izquierda",
     "topRight": "Arriba derecha",
-    "dock": "muelle"
+    "dock": "muelle",
+    "hint": "Arriba izquierda y arriba derecha son mutuamente excluyentes; el dock se puede alternar de forma independiente"
   }
 
   ,"weekStart": {
@@ -34,6 +35,10 @@
 
   ,"showWeekNum": {
     "title": "Mostrar número de semana"
+  }
+  ,"setting": {
+    "sectionCalendar": "Calendario",
+    "sectionWeekly": "Notas semanales"
   }
   ,"weekly": {
     "enable": "Habilitar notas semanales",

@@ -1,18 +1,18 @@
 {
-  "name": "siyuan-plugin-calendar-multi",
+  "name": "siyuan-plugin-easy-diary",
   "author": "51junjie",
-  "url": "https://github.com/51junjie/siyuan-plugin-calendar-multi",
-  "version": "0.1.0",
-  "minAppVersion": "2.13.0",
+  "url": "https://github.com/51junjie/siyuan-plugin-easy-diary",
+  "version": "1.0.0",
+  "minAppVersion": "3.8.0",
   "backends": ["all"],
   "frontends": ["all"],
   "disabledInPublish": true,
   "displayName": {
-    "zh_CN": "思源日历面板(多日记)",
-    "default": "Siyuan Calendar Panel"
+    "zh_CN": "无忧日记",
+    "default": "Easy Diary"
   },
   "description": {
-    "zh_CN": "在日历面板上快速新建或转到日记与周记，支持多个日历快速切换（最多三个）",
+    "zh_CN": "在日历面板上快速新建或转到日记与周记，支持多个日记快速切换（最多三个）",
     "default": "Quickly create a new or go to diary or weekly notes on the calendar panel"
   },
   "readme": {

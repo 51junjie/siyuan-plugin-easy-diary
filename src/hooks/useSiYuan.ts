@@ -16,11 +16,11 @@ export const isMobile = ref<boolean>(false);
 // EventBus contains private methods and must not be wrapped in a Vue reactive Proxy.
 export const eventBus = shallowRef<EventBus>();
 
-export const position = ref();
+export const position = ref<string[]>([]);
 export const weekStart = ref<number>(1);
 export const showWeekNum = ref<boolean>(false);
 export const weeklyEnabled = ref<boolean>(false);
-export const weeklyPath = ref<string>('');
+export const weeklyPath = ref<string>('/daily note/{{now | date "2006"}}/{{now | date "2006-01"}}/{{now | date "2006"}}-W{{weekly}}');
 export const weeklyTemplatePath = ref<string>('');
 
 // 用于触发日历刷新的计数器，每次弹窗打开时递增

@@ -23,7 +23,8 @@
     "title": "Position d'entrée du bouton",
     "topLeft": "En haut à gauche",
     "topRight": "En haut à droite",
-    "dock": "Dock"
+    "dock": "Dock",
+    "hint": "Haut gauche et haut droit sont mutuellement exclusifs ; le dock peut être basculé indépendamment"
   }
 
   ,"weekStart": {
@@ -35,11 +36,15 @@
   ,"showWeekNum": {
     "title": "Afficher le numéro de semaine"
   }
+  ,"setting": {
+    "sectionCalendar": "Calendrier",
+    "sectionWeekly": "Notes hebdomadaires"
+  }
   ,"weekly": {
     "enable": "Activer les notes hebdomadaires",
     "pathLabel": "Chemin des notes hebdomadaires",
     "templateLabel": "Chemin du modèle hebdomadaire",
-    "pathHint": "Vous pouvez utiliser des variables de modèle de date, p.ex. /Daily Notes/{{now | date \"2006/01\"}}/{{now | date \"2006\"}}-W{{weekly}} — {{weekly}} est le numéro de la semaine.",
+    "pathHint": "Vous pouvez utiliser des variables de modèle de date, p.ex. /daily note/{{now | date \"2006\"}}/{{now | date \"2006-01\"}}/{{now | date \"2006\"}}-W{{weekly}} — {{weekly}} est le numéro de la semaine.",
     "templateHint": "p.ex. weekly-template.md — placez ce fichier dans workspace/data/templates/. Laisser vide pour ne pas rendre le modèle."
   }
 }
