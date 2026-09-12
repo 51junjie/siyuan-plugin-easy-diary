@@ -60,20 +60,11 @@
         </div>
       </a-layout-header>
       <a-layout-content class="calendar-content">
-        <div
-          v-for="notebookId in selectNotebookIds"
-          :key="notebookId"
-          class="calendar-panel"
-          v-show="notebookId === selectNotebookId"
-          :class="{ active: notebookId === selectNotebookId }"
-        >
-          <CalendarView :notebook="getNotebookById(notebookId)" />
-        </div>
-        <CalendarView
-          v-if="selectNotebookIds.length === 0 && cusNotebooks.length > 0"
-          key="fallback-calendar"
-          :notebook="cusNotebooks[0]"
-        />
+        <Transition name="calendar-scale" mode="out-in">
+          <div v-if="activeNotebook" :key="activeNotebook.id" class="calendar-panel">
+            <CalendarView :notebook="activeNotebook" />
+          </div>
+        </Transition>
       </a-layout-content>
     </a-layout>
   </a-config-provider>
@@ -175,6 +166,11 @@ const notebookMap = computed(() => {
     map.set(book.id, book);
   });
   return map;
+});
+
+const activeNotebook = computed(() => {
+  const activeId = selectNotebookId.value || selectNotebookIds.value[0] || cusNotebooks.value[0]?.id;
+  return activeId ? notebookMap.value.get(activeId) : undefined;
 });
 
 // 根据笔记本 ID 获取笔记本名称
@@ -416,7 +412,7 @@ function changeNotebook(notebookId: NotebookId) {
     align-items: center;
     justify-content: center;
     padding: 0;
-    border: 1px solid var(--b3-border-color);
+    border: 0;
     border-radius: 4px;
     background-color: var(--b3-theme-surface);
     color: var(--b3-theme-on-surface);
@@ -424,7 +420,6 @@ function changeNotebook(notebookId: NotebookId) {
 
     &:hover,
     &.active {
-      border-color: var(--b3-theme-primary);
       color: var(--b3-theme-primary);
     }
 
@@ -484,7 +479,7 @@ function changeNotebook(notebookId: NotebookId) {
   min-height: 34px;
   padding: 2px 4px;
   background: var(--b3-theme-surface);
-  border: 1px solid var(--b3-border-color);
+  border: 0;
   border-radius: 6px;
   box-sizing: border-box;
   overflow-x: auto;
@@ -563,13 +558,16 @@ function changeNotebook(notebookId: NotebookId) {
   min-width: 0;
 }
 
-.calendar-panel.active {
-  animation: calendar-panel-enter 0.2s ease-out;
+.calendar-scale-enter-active,
+.calendar-scale-leave-active {
+  transition: transform 0.22s ease-out, opacity 0.22s ease-out;
+  will-change: transform, opacity;
 }
 
-@keyframes calendar-panel-enter {
-  from { opacity: 0.72; transform: translateX(5px); }
-  to { opacity: 1; transform: translateX(0); }
+.calendar-scale-enter-from,
+.calendar-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
 }
 
 // 布局头部样式
