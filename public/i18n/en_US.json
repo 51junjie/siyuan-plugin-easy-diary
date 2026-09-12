@@ -23,7 +23,8 @@
     "title": "Button entrance position",
     "topLeft": "Top left",
     "topRight": "Top right",
-    "dock": "Dock"
+    "dock": "Dock",
+    "hint": "Top-left and top-right are mutually exclusive; dock can be toggled independently"
   }
 
   ,"weekStart": {
@@ -35,11 +36,15 @@
   ,"showWeekNum": {
     "title": "Show week number"
   }
+  ,"setting": {
+    "sectionCalendar": "Calendar",
+    "sectionWeekly": "Weekly Notes"
+  }
   ,"weekly": {
     "enable": "Enable weekly notes",
     "pathLabel": "Weekly notes path",
     "templateLabel": "Weekly template path",
-    "pathHint": "You can use date template variables, e.g. /Daily Notes/{{now | date \"2006/01\"}}/{{now | date \"2006\"}}-W{{weekly}} — {{weekly}} is the week number.",
+    "pathHint": "You can use date template variables, e.g. /daily note/{{now | date \"2006\"}}/{{now | date \"2006-01\"}}/{{now | date \"2006\"}}-W{{weekly}} — {{weekly}} is the week number.",
     "templateHint": "e.g. weekly-template.md — place this file under workspace/data/templates/. Leave empty to skip template rendering."
   }
 }

@@ -23,7 +23,8 @@
     "title": "按钮入口位置",
     "topLeft": "顶栏左",
     "topRight": "顶栏右",
-    "dock": "边栏"
+    "dock": "边栏",
+    "hint": "顶栏左、右仅可选其一；边栏可独立勾选"
   }
 
   ,"weekStart": {
@@ -35,11 +36,15 @@
   ,"showWeekNum": {
     "title": "显示周号"
   }
+  ,"setting": {
+    "sectionCalendar": "日历",
+    "sectionWeekly": "周记"
+  }
   ,"weekly": {
     "enable": "周记开关",
     "pathLabel": "周记存放路径",
     "templateLabel": "周记模板路径",
-    "pathHint": "可使用日期格式模板变量，例如 /Daily Notes/{{now | date \"2006/01\"}}/{{now | date \"2006\"}}-W{{weekly}}，{{weekly}} 为周号。",
+    "pathHint": "可使用日期格式模板变量，例如 /daily note/{{now | date \"2006\"}}/{{now | date \"2006-01\"}}/{{now | date \"2006\"}}-W{{weekly}}，{{weekly}} 为周号。",
     "templateHint": "例如 weekly-template.md，需要将该文件放置于工作空间/data/templates/ 下。留空则不渲染模板。"
   }
 }
