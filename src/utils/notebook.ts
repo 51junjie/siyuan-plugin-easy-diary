@@ -15,7 +15,13 @@ export class CusNotebook implements Notebook, NotebookConf {
     const { conf } = await api.getNotebookConf(id);
     let { dailyNoteSavePath, dailyNoteTemplatePath } = conf;
     dailyNoteSavePath = dailyNoteSavePath.replace(/\{\{(.*?)\}\}/g, match =>
-      match.replace(/\bnow\b(?=(?:(?:[^"]*"){2})*[^"]*$)/g, `(toDate "2006-01-02" "[[dateSlot]]")`)
+      match.replace(
+        /\bnow\b(\s+"[^"]*")?(?=(?:(?:[^"]*"){2})*[^"]*$)/g,
+        (_m, fmt?: string) =>
+          fmt
+            ? `date ${fmt} (toDate "2006-01-02" "[[dateSlot]]")`
+            : `(toDate "2006-01-02" "[[dateSlot]]")`
+      )
     );
     if (dailyNoteTemplatePath) {
       const system = await api.request('/api/system/getConf');
@@ -84,7 +90,13 @@ export class CusNotebook implements Notebook, NotebookConf {
 
     // Replace now with toDate for the representative date
     pathPattern = pathPattern.replace(/\{\{(.*?)\}\}/g, match =>
-      match.replace(/\bnow\b(?=(?:(?:[^"]*"){2})*[^"]*$)/g, `(toDate "2006-01-02" "${dateStr}")`)
+      match.replace(
+        /\bnow\b(\s+"[^"]*")?(?=(?:(?:[^"]*"){2})*[^"]*$)/g,
+        (_m, fmt?: string) =>
+          fmt
+            ? `date ${fmt} (toDate "2006-01-02" "${dateStr}")`
+            : `(toDate "2006-01-02" "${dateStr}")`
+      )
     );
     return api.renderSprig(pathPattern);
   }
